@@ -1,0 +1,47 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples; see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+enum RobotStartUpTaskType {
+    SU_UNUSED_TASK = 0;
+    SU_EXPLORE_TASK = 1;                    // 探索任务
+    SU_SWEEP_TASK = 2;                      // 清扫任务
+    SU_MOP_TASK = 3;                        // 拖地任务
+    SU_SWEEP_AND_MOP_TASK = 4;           	// 扫拖任务
+    SU_RECHARGE_TASK = 5;                   // 回充任务
+    SU_TIMING_TASK = 6;                     // 定时任务
+    SU_AIM_POINT_CLEAN_TASK = 7;            // 定点清扫任务
+    SU_SELECT_AREA_CLEAN_TASK = 8;          // 选区域清扫
+    SU_STANDBY_TASK = 9;                    // 待机任务
+    SU_EDGE_CLEAN_TASK = 10;                // 沿边清扫
+}
+// 扫地机任务状态
+enum RobotTaskStateType {
+    TASK_UNUSED = 0;
+    TASK_COMPLETE = 1;                  // 任务完成/空闲
+    TASK_START = 2;                     // 任务开始
+    TASK_PAUSE = 3;                     // 任务暂停
+    TASK_RUNNING = 4;                   // 任务进行中
+    FAUIL_PAUSE = 5;                    // 故障暂停
+    TASK_BEGIN = 6;                     // 任务开始运行
+    TASK_CONTINUE = 7;                  // 任务继续
+    TASK_END = 8;                       // 任务结束
+    TASK_BEGINING = 9;                  // 任务开始中
+}
+
+message RobotTaskAndState{
+
+    RobotTaskStateType robot_task_state = 1;                // 扫地机任务状态
+    RobotStartUpTaskType robot_start_up_task = 2;           // 扫地机启动任务
+    RobotStartUpTaskType robot_last_task = 3;               // 上次工作任务
+    
+}

@@ -1,0 +1,101 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+// 2022/4/1 wxc 该proto是上层下发清洁电机控制，当前机器人状态，清扫信息等，包括对于基站的控制信息 
+
+message RobotBehaviorState{
+
+    // enum RobotControl
+    // {
+    //     kStop = 0;          // 停止
+    //     kForward = 1;       // 前进
+    //     kRetreatL = 2;      // 后退后左转
+    //     kRetreatR = 3;      // 后退后右转
+    //     kTurnLeft = 4;      // 左转
+    //     kTurnRight = 5;     // 右转
+    //     kRotate = 6;        // 原地旋转
+    //     kAuto = 7;          // 自动
+    //     kChargeBack = 8;    // 回充
+    //     kCharging = 9;      // 正在充电
+    //     kAlongEdge = 10;    // 沿边模式
+    //     kRetreat = 11;      // 后退
+    //     kLeftCollide = 12;  // 左碰撞
+    //     kRightCollide = 13; // 右碰撞
+    //     kFrontCollide = 14; // 正面碰撞
+    //     kCliff = 15;        // 悬崖态
+    // } 
+
+    // 期望的任务状态
+    enum KeyStateType {
+        
+        KeyIdle      = 0;    //未按下
+        kKey1Up      = 1;    //按键1短按
+        kKey2Up      = 2;    //按键2短按
+        kKey1double  = 3;    //按键1双击
+        kKey2double  = 4;    //按键2双击
+        kKey1Long    = 5;    //按键1长按
+        kKey2Long    = 6;    //按键2长按
+        kKeyGropup   = 7;     //组合按键
+    }
+
+    uint32 clean_percent = 1;                               // 清扫百分比
+    uint32 front_distance  = 2;                             // 扫地机前方障碍物距离
+    uint32 clean_mode = 5;                                  // 扫地机清扫模式
+    uint32 main_clean_motor_mode = 6;                       // 扫地机主扫电机模式
+    uint32 side_clean_motor_mode = 7;                       // 扫地机边扫电机模式
+    uint32 swiffer_motor_mode = 8;                          // 扫地机拖把电机模式
+    uint32 fan_motor_mode = 9;                              // 扫地机风机电机模式
+    uint32 water_box_level_mode = 10;                       // 扫地机水箱档位模式
+    uint32 partner_clean_mop_switch = 11;                   // 伴侣清洗拖布（2为暂停，1为打开，０为关闭）
+    uint32 partner_dust_collection_switch = 12;             // 伴侣集尘（2为暂停，1为打开，０为关闭）
+    KeyStateType robot_key_state = 13;   // 扫地机按键信息
+    KeyStateType partner_key_state = 14; // 伴侣按键信息
+    AbnormalState robot_current_abnormal_state = 15;        // 当前扫地机异常状态
+    uint32 partner_drying_mop_switch = 16;                  // 伴侣烘干拖布（2为暂停，1为打开，０为关闭）
+    RobotTaskBreathingLight breathing_light= 17;            // 扫地机工作时呼吸灯状态
+    uint32 behind_distance  = 18;                           // 扫地机后方障碍物距离
+
+
+}; // RobotBehaviorState
+
+enum RobotTaskBreathingLight{
+    UNUSED_SATTE = 0;
+    WORKING_STATE = 1;              //工作状态:黄灯呼吸
+    CHARGING_STATE = 2;             //充电状态:黄、红灯闪烁
+    CHARE_DONE_STATE = 3;           //充电完成
+    STANDBY_STATE = 4;              //待机:黄灯常亮
+    EXCEPTION_STATE = 5;            //异常状态:红灯闪烁
+    ERROR_STATE = 6;                //错误状态
+    STOP_STATE = 7;                 //停止态（关机）
+    INITING_STATE = 8;              //初始化态（开机）
+    SUSPEND_STATE = 9;              //暂停态
+}
+
+enum AbnormalState {
+
+    NormalState = 0;        //正常状态
+    StayProhibitedZone = 1; //与禁区重叠
+    DustBoxException = 2;   //尘盒异常
+    BatteryException = 3;   //电量低无法工作
+    LidarException = 4;     //雷达异常
+    PickedUpException = 5;  //被抱起
+    CrashError = 6;         //碰撞传感器异常
+    DropError = 7;          //悬崖传感器异常
+    BatteryError = 8;       //电池异常
+    LineLaserError = 9;     //沿边传感器异常
+    FunError = 10;          //风机电机异常
+    WheelError = 11;        //轮子异常
+    Trapped = 12;           //被困
+    PartnerError = 13;      //伴侣异常
+
+}

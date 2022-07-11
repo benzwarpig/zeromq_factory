@@ -1,0 +1,77 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+syntax = "proto3";
+package LSLAM;
+
+enum TimingFanMotorLevel
+{
+    TIMING_FAN_MOTOR_CLOSE = 0;            //风机档位关闭
+    TIMING_FAN_MOTOR_MUTE = 1;             //风机档位静音
+    TIMING_FAN_MOTOR_NORMAL = 2;           //风机档位正常
+    TIMING_FAN_MOTOR_STRONG = 3;           //风机档位强力
+    TIMING_FAN_MOTOR_SUPER_STRONG = 4;     //风机档位超强
+    TIMING_FAN_MOTOR_NOT_SET = 5;          //风机档位未设置
+}
+
+enum TimingWaterBoxLevel
+{
+    TIMING_WATER_BOX_LEVEL_CLOSE = 0;      //水箱档位关闭
+    TIMING_WATER_BOX_LEVEL_ONE = 1;        //水箱档位一
+    TIMING_WATER_BOX_LEVEL_TWO = 2;        //水箱档位二
+    TIMING_WATER_BOX_LEVEL_THREE = 3;      //水箱档位三
+    TIMING_WATER_BOX_LEVEL_NOT_SET = 4;    //水箱档位未设置
+}
+
+enum TimingCleanMode
+{
+    TIMING_CLEAN_AND_SWEEP = 0;    //扫拖:0
+    TIMING_CLEAN = 1;              //扫:1
+    TIMING_SWEEP = 2;              //拖:2
+};
+
+message Timing
+{
+    //定时设置：定时是否有效，执行星期，执行时间，房间个数，房间标识，工作模式，风机档位，水箱档位，清扫次数
+    bool is_effective = 1;                          //是否有效
+    int32 timing_week = 2;                          //执行星期
+    int32 execution_time = 3;                       //执行时间(时分)
+    int32 execution_date = 4;                       //执行时间(年月日)
+    int32 room_number = 5;                          //房间个数
+    repeated int32 room_id = 6;                     //房间标识
+    TimingCleanMode clean_mode = 7;                 //工作模式
+    TimingFanMotorLevel fan_motor_level = 8;        //风机档位
+    TimingWaterBoxLevel water_box_level = 9;        //水箱档位
+    int32 clean_number = 10;                        //清扫次数
+}
+
+message TuyaDoNotDisturb
+{
+    //勿扰开关设置：手机系统时区，开始时间，结束时间，当天或第二天,开关
+    int32 time_zone = 1;                            //手机系统时区
+    int32 start_time = 2;                           //开始时间
+    int32 end_time = 3;                             //结束时间
+    repeated int32 day = 4;                         //当天或第二天
+    int32 do_not_disturb_switch = 5;                //勿扰开关(1为开，2为关)
+}
+
+message TimingSettingConfigurationFile
+{
+    repeated Timing set_timing = 1;                       //设置定时
+    int32 time_zone = 2;                                  //手机系统时区
+    int32 timing_number = 3;                              //定时条数
+
+    TuyaDoNotDisturb set_tuya_do_not_disturb = 4;                        //设置勿扰
+    bool set_break_point_switch = 5;                                     //设置断点徐扫开关
+    TimingFanMotorLevel default_fan_motor_level = 6;                     //默认风机档位
+    TimingWaterBoxLevel default_water_box_level = 7;                     //默认水箱档位
+    int32 carpet_clean_prefer = 8;                                       //地毯清洁偏好
+    bool auto_boost_switch = 9;                                          //地毯增压开关
+
+}

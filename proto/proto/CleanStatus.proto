@@ -1,0 +1,24 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+//数据说明：
+//0:不在清扫状态
+//1:弓形清扫
+//2:沿虚拟墙清扫
+//3:沿障碍物清扫
+//4:去回溯点状态
+
+message CleanStatus{
+
+int32 clean_status = 1; //清扫状态
+}

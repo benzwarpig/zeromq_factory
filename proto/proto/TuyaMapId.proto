@@ -1,0 +1,18 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+syntax = "proto3";
+package LSLAM;
+
+message TuyaMapId
+{
+    int32 tuya_map_id = 1;                          //涂鸦端当前使用的地图id
+    string version_before_firmware_upgrade = 2;     //固件升级前版本号
+    int32 firmware_upgrade_flag_value = 3;          //用于判断是否是升级后第一次比对版本号
+}

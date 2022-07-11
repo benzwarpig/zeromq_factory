@@ -1,0 +1,48 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples; see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+message State{
+    uint32 remain_battery = 1;  //电量
+    uint32 robot_motion_state = 2;            //方向
+    uint32 previous_robot_motion_state = 3;   //上次方向
+    uint32 robot_erro_state = 4;
+    uint32 robot_abnormal_state = 5;
+
+}
+
+// 期望的任务状态
+enum KeyStateType {
+    
+    KeyIdle      = 0;    //未按下
+    kKey1Up      = 1;    //按键1短按
+    kKey2Up      = 2;    //按键2短按
+    kKey1double  = 3;    //按键1双击
+    kKey2double  = 4;    //按键2双击
+    kKey1Long    = 5;    //按键1长按
+    kKey2Long    = 6;    //按键2长按
+    kKeyGropup   = 7;     //组合按键
+}
+
+
+message RobotState{
+
+    uint32 user_number = 1;             //客户编号
+    uint32 firm_version = 2;            //固件版本号
+    KeyStateType robot_key_state = 3;   // 扫地机按键信息
+    KeyStateType partner_key_state = 4; // 伴侣按键信息
+    State  state = 5;                   //机器人状态
+    int32  edge_distance = 6;           //沿边最短距离（mm）
+    // uint32 key_command = 4;          //按键命令
+    // int32  echo_front_distance = 6;  //超声波测距值
+    bool is_robot_pose_trapped = 7;     //机器人位姿是否被限制
+}

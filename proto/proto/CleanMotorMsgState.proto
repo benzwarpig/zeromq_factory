@@ -1,0 +1,52 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+message ControlMotorAndPartner {
+
+    enum CleanMode
+	{
+		CLEAN_MODE_STANDBY        = 0; //待机模式
+		CLEAN_MODE_CONVENTION     = 1; //常规模式
+		CLEAN_MODE_MUT            = 2; //静音模式
+		CLEAN_MODE_STRONG         = 3; //强力模式
+	};
+	
+	enum CleanMotorState
+	{
+		CLEAN_MOTOR_CLOSE		  = 0; //清洁电机关闭
+		CLEAN_MOTOR_OPEN		  = 1; //清洁电机开启
+		CLEAN_MOTOR_LOW			  = 2; //清洁电机低档
+		CLEAN_MOTOR_MEDIUM		  = 3; //清洁电机中档
+		CLEAN_MOTOR_HIGH		  = 4; //清洁电机高档
+	};
+
+	enum RemoteControlDirection
+    {
+        DEFAIL = 0;                         
+        FORWARD = 1;                        //前进
+        BACKWARD = 2;                       //后退
+        TRUN_LEFT = 3;                      //左拐
+        TURN_RIGHT = 4;                     //右拐
+        STOP = 5;                           //暂停
+    }
+
+    CleanMode clean_mode 			       = 1;  // 清扫模式
+	CleanMotorState robot_main_brush       = 2;  // 主扫模式
+	CleanMotorState robot_edge_brush       = 3;  // 边刷模式
+	CleanMotorState robot_mop_brush        = 4;  // 拖把模式
+	CleanMotorState robot_fan_motor        = 5;  // 风机模式
+	CleanMotorState	robot_waterbox_switch  = 6;  // 水箱模式
+	uint32 partner_abnormal_state          = 7;  // 伴侣异常状态
+	int32 echo_front_distance 			   = 8;  // 超声波测距值
+	RemoteControlDirection direction       = 9;  //遥控方向
+}

@@ -1,0 +1,5 @@
+注：proto工程目录需与使用proto文件的工程目录同级！
+
+1.运行当前目录下的run_me.sh后，会将proto目录中的.proto文件生成对应的.h .cc文件；
+2.其他工程使用该目录的文件时可在CMakeLists.txt文件中的include_directories选项增加proto目录，之后在当前目录导入proto.pb头文件时可直接include文件名；
+3.若在vscode显示中导入proto头文件的代码报错(红线)，可在c_cpp_properties.json文件增加includePath。

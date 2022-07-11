@@ -1,0 +1,25 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+
+syntax = "proto3";
+package LSLAM;
+
+import "Pose.proto";
+
+
+message SubmapTexture {
+
+string cells=1;
+int32 width =2;
+int32 height=3;
+double resolution=4;
+Pose slice_pose =5;
+}

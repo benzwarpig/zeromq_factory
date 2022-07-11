@@ -1,0 +1,32 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+
+syntax = "proto3";
+package LSLAM;
+import "google/protobuf/timestamp.proto";
+
+
+
+message Header {
+    message CustomInfo {
+        // linux gettimeofday() 获取的 timeval 时间戳
+        int64 seconds = 4;  
+        int64 microseconds = 5;
+        // 序号。接收端需要做溢出处理，当一个消息的序号达到 uint64 的最大值时，下一个序号会从 0 继续
+        uint64 count = 6;
+    }
+
+    uint32 seq = 1;
+    google.protobuf.Timestamp stamp = 2;
+    string frame_id=3;
+
+    CustomInfo custom = 4;
+}

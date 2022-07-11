@@ -1,0 +1,54 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+message TheKeyState {
+    
+    // enum CurrentTaskState                   // 当前任务状态
+    // {
+    //     TASK_START = 0;                     // 任务开始
+    //     TASK_PAUSE = 1;                     // 任务暂停
+    //     TASK_CONTINUE = 2;                  // 任务继续
+    //     TASK_COMPLETE = 3;                  // 任务完成
+    //     PICKED_UP = 4;                      // 被抱起
+    //     DANGLING = 5;                       // 悬空
+    //     TRAPPED = 6;                        // 被困住
+    //     DUST_BOX_IS_NOT_SUBSISTENT = 7;     // 尘盒不在
+    //     SIDE_BRUSH_IS_NOT_SUBSISTENT = 8;   // 边刷不在
+    //     SWIFFER_IS_NOT_SUBSISTENT = 9;      // 拖布不在
+    //     WATER_BOX_IS_NOT_SUBSISTENT = 10;   // 水箱不在
+    // }
+
+    // enum CurrentTask                        // 当前任务
+    // {
+    //     RECHARGE_TASK = 0;                  // 回充任务
+    //     CLEAN_TASK = 1;                     // 清扫任务
+    //     SWEEP_TASK = 2;                     // 拖地任务
+    //     CLEAN_AND_SWEEP_TASK = 3;           // 扫拖任务
+    //     EXPLORE_TASK = 4;                   // 探索任务
+    // }
+
+    enum KeyStateType
+    {
+        KeyIdle = 0;     //未按下
+        kKey1Up = 1;     //按键1短按
+        kKey2Up = 2;     //按键2短按
+        kKey1double = 3; //按键1双击
+        kKey2double = 4; //按键2双击
+        kKey1Long = 5;   //按键1长按
+        kKey2Long = 6;   //按键2长按
+        kKeyGropup = 7;  //组合按键
+    }
+
+    KeyStateType robot_key_state = 1;   // 扫地机按键状态
+    KeyStateType partner_key_state = 2; // 伴侣按键状态
+}

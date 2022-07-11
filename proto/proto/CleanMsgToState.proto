@@ -1,0 +1,40 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+
+
+message  VehicleSpeed{
+
+    enum RobotExpection
+    {
+        kNormalMovementAction  = 0; // 正常动作，接收线速度角速度
+        kChargeBackAction      = 1; // 回充动作，接收距离角度
+        kTurnAroundAction      = 2; // 原地旋转，接收旋转角度
+        kGoStraightAction      = 3; // 走直线，接收直行距离
+        kTurnRadiusAction      = 4; // 以一定半径旋转180°,接收旋转的半径
+        kCollideEdgeAction     = 5; // 碰撞沿边，无参数
+        kLidarEdgeAction       = 6; // 线激光雷达沿边，无参数
+        kInfraredChargeAction  = 7; // 红外回充动作
+        kHelpOutAction         = 8; // 底层脱困动作
+    };
+
+    int32 line_speed =1;//线速度，单位 mm/s
+    int32 angular_velocity =2;//角速度，单位 度/s
+    RobotExpection robot_expection_action = 3;// 机器人期望动作
+
+}
+message CleanMsgToState{
+
+    VehicleSpeed v_speed =1;//车速
+
+}

@@ -1,0 +1,37 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples; see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+// 扫地机期望任务状态
+enum RobotExpectTaskStateType {
+    EXPLECT_TASK_UNUSED = 0;
+    EXPLECT_TASK_START = 6;                     // 任务改变
+    EXPLECT_TASK_PAUSE = 3;                     // 任务暂停
+    EXPLECT_TASK_CONTINUE = 7;                  // 任务继续
+}
+
+// 扫地机期望任务
+enum RobotExpectTaskType {
+    EXPLECT_EXPLORE_UNUSED = 0;
+    EXPLECT_EXPLORE_TASK = 1;                   // 探索任务    
+    EXPLECT_SWEEP_TASK = 2;                     // 清扫任务
+    EXPLECT_MOP_TASK = 3;                     	// 拖地任务
+    EXPLECT_SWEEP_AND_MOP_TASK = 4;           	// 扫拖任务
+    EXPLECT_RECHARGE_TASK = 5;                  // 回充任务
+}
+
+message RobotExpectTaskAndState{
+
+    RobotExpectTaskStateType robot_expect_task_state = 1; // 扫地机任务状态
+    RobotExpectTaskType robot_expect_task = 2;            // 扫地机任务
+
+}

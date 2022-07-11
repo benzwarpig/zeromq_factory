@@ -1,0 +1,32 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples; see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+enum ErrorMessage 
+{
+    EM_UNUSED = 0;
+    EM_DONOT_DISTURB = 1;                   // 勿扰
+    EM_LOWER_BETTERY_SLEEP = 2;             // 低电量强制休眠
+    EM_LOWER_BETTERY_RECHARGE = 3;          // 低电量强制回充 
+    EM_ROBOT_RUNING = 4;                    // 扫地机在运行 方向键不可用   
+}
+
+message DistributionNetworkBegin{
+
+    int32 distribution_network_begin = 1; /* 1 触发配网 */
+    int32 battery_level = 2; /* 2 电池电量 */
+    int32 upper_strata_firmware_update = 3; /* 3 上层固件升级 */
+    int32 bottom_firmware_update = 4; /* 4 底层固件升级 */
+    int32 charging = 5; /* 充电中 */
+    int32 charging_completed = 6; /* 充电完成 */
+    ErrorMessage daemon_to_tuya_error_message = 7;  /* 后台管理进程发送错误消息给涂鸦 */
+}

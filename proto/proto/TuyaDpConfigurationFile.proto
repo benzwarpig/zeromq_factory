@@ -1,0 +1,125 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+syntax = "proto3";
+package LSLAM;
+import "Points.proto";
+
+message SetVirtualWall
+{
+    int32 virtual_wall_number = 1;                                  //虚拟墙个数
+    repeated Points virtual_wall_points = 2;                        //虚拟墙点集
+}
+
+message SetPenaltyArea
+{
+
+    enum PenaltyAreaMode
+    {
+        ban_clean_and_sweep = 0;    //禁扫拖
+        ban_clean = 1;              //禁扫
+        ban_sweep = 2;              //禁拖
+    }
+
+    int32 ban_sweep_penalty_area_number = 1;                        //禁区(禁拖)数量
+    repeated Points ban_sweep_penalty_area_points = 2;              //禁区(禁拖)点集
+    int32 ban_clean_and_sweep_penalty_area_number = 3;              //禁区(禁扫拖)数量
+    repeated Points ban_clean_and_sweep_penalty_area_points = 4;    //禁区(禁扫拖)点集
+}
+
+message PartitionSegmentation
+{
+    int32 partition_segmentation_room_id = 1;                       //房间标识:分区分割
+    repeated Points partition_segmentation_points = 2;              //分区分割点集
+    int32 partition_segmentation_set_result = 3;                    //分区分割设置结果
+}
+
+message PartitionMerge
+{
+    repeated int32 partition_merge_room_id = 1;                     //房间标识:分区合并
+    int32 partition_merge_set_result = 3;                           //分区合并设置结果
+}
+
+message TuyaRoomName
+{
+    //设置房间名称：房间个数，房间标识，名称长度，房间名称
+    int32 room_number = 1;                  //房间个数
+    repeated int32 room_id = 2;             //房间标识
+    repeated int32 room_name_length = 3;    //名称长度
+    repeated string room_name = 4;          //房间名称
+}
+
+message TuyaCleanOrder
+{
+    //设置清扫顺序：房间个数，房间标识
+    int32 room_number = 1;                  //房间个数
+    repeated int32 room_id = 2;             //房间标识
+}
+
+enum FanMotorLevel
+{
+    FAN_MOTOR_CLOSE = 0;            //风机档位关闭
+    FAN_MOTOR_MUTE = 1;             //风机档位静音
+    FAN_MOTOR_NORMAL = 2;           //风机档位正常
+    FAN_MOTOR_STRONG = 3;           //风机档位强力
+    FAN_MOTOR_SUPER_STRONG = 4;     //风机档位超强
+    FAN_MOTOR_NOT_SET = 5;          //风机档位未设置
+}
+
+enum WaterBoxLevel
+{
+    WATER_BOX_LEVEL_CLOSE = 0;      //水箱档位关闭
+    WATER_BOX_LEVEL_ONE = 1;        //水箱档位一
+    WATER_BOX_LEVEL_TWO = 2;        //水箱档位二
+    WATER_BOX_LEVEL_THREE = 3;      //水箱档位三
+    WATER_BOX_LEVEL_NOT_SET = 4;    //水箱档位未设置
+}
+
+message TuyaRoomProperties
+{
+    //设置房间属性：房间个数，房间标识，风机档位，水箱档位，清扫次数
+    int32 room_number = 1;                              //房间个数
+    repeated int32 room_id = 2;                         //房间标识
+    repeated FanMotorLevel fan_motor_level = 6;         //风机档位
+    repeated WaterBoxLevel water_box_level = 7;         //水箱档位
+    repeated int32 clean_number = 8;                    //清扫次数
+}
+
+enum CleanMode
+{
+    CLEAN_AND_SWEEP = 0;    //扫拖:0
+    CLEAN = 1;              //扫:1
+    SWEEP = 2;              //拖:2
+};
+
+message TuyaSettingConfigurationFile
+{
+    SetVirtualWall set_tuya_virtual_wall = 1;                       //设置虚拟墙
+    SetPenaltyArea set_tuya_penalty_area = 2;                       //设置禁区
+    PartitionSegmentation set_tuya_partition_segmentation = 3;      //设置分区分割
+    PartitionMerge set_tuya_partition_merge = 4;                    //设置分区合并
+    bool partition_switch = 5;                                      //设置恢复默认分区
+    TuyaRoomName set_tuya_room_name = 6;                            //设置房间名称
+    TuyaCleanOrder set_tuya_clean_order = 7;                        //设置清扫顺序
+    TuyaRoomProperties set_tuya_room_properties = 8;                //设置房间属性
+
+    int32 recharge_world_point_x = 9;                                     //回充点世界坐标x值
+    int32 recharge_world_point_y = 10;                                    //回充点世界坐标y值
+
+    int32 recharge_grid_point_x = 11;                                    //回充点格子坐标x值
+    int32 recharge_grid_point_y = 12;                                    //回充点格子坐标y值
+
+    int32 whether_near_partner = 13;                                     //是否在伴侣附近
+    int32 whether_adjust_right_pos = 14;                                 //是否摆正机器人
+
+    repeated int32 virtual_wall_data = 15;                          //虚拟墙数据
+    repeated int32 penalty_area_data = 16;                          //禁区数据
+
+bytes set_language_pack_name = 17;                                  //设置语言包名
+}

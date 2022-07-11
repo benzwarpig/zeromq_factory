@@ -1,0 +1,424 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+syntax = "proto3";
+package LSLAM;
+import "Points.proto";
+
+message TuyaCommandMsg
+{
+
+    enum COMMAND{
+        clean_command = 0;      //清扫开关命令
+        pause_command = 1;      //暂停命令
+        recharge_command = 2;   //回充命令
+        select_area_clean = 3;  //选区清扫:清扫次数,房间个数,房间id
+        aim_point_clean = 4;    //定点清扫:一个点
+        plan_area_clean = 5;    //划区清扫:清扫次数,区域框个数,四个坐标
+        over_task = 6;          //结束任务
+        remote_control = 7;     //遥控
+        look_for_robot = 8;     //寻找机器人
+        explore = 9;            //探索
+    };
+
+    enum RemoteControlDirection
+    {
+        DEFAIL = 0;                         
+        FORWARD = 1;                        //前进
+        BACKWARD = 2;                       //后退
+        TRUN_LEFT = 3;                      //左拐
+        TURN_RIGHT = 4;                     //右拐
+        STOP = 5;                           //暂停
+        
+    }
+
+    enum SuctionLevel
+    {
+        SUCYION_LEVEL_CLOSE = 0;        //吸力档位关闭
+        SUCYION_LEVEL_MUTE = 1;         //吸力档位静音
+        SUCYION_LEVEL_NORMAL = 2;       //吸力档位正常
+        SUCYION_LEVEL_STRONG = 3;       //吸力档位强力
+        SUCYION_LEVEL_SUPER_STRONG = 4; //吸力档位超强
+    }
+
+    enum WaterVolumeLevel
+    {
+        WATER_BOX_LEVEL_CLOSE = 0;      //水箱档位关闭
+        WATER_BOX_LEVEL_ONE = 1;        //水箱档位一
+        WATER_BOX_LEVEL_TWO = 2;        //水箱档位二
+        WATER_BOX_LEVEL_THREE = 3;      //水箱档位三
+        WATER_BOX_LEVEL_NOT_SET = 4;    //水箱档位未设置
+    }
+
+    COMMAND current_command =1;                                     //当前命令
+
+    repeated Points plan_area_clean_points = 2;                     //划区清扫点集
+    repeated Points partition_segmentation_points = 3;              //分区分割点集
+    Points aim_point_clean_points = 4;                              //定点清扫点
+    repeated int32 room_id = 5;                                     //房间id.
+    int32 select_area_clean_time_number = 6;                        //选区清扫次数.
+    int32 room_number = 7;                                          //房间个数.
+    int32 area_number = 8;                                          //区域框个数.
+    RemoteControlDirection direction = 9;                           //遥控方向
+    SuctionLevel suction_level = 18;                                //吸力档位
+    WaterVolumeLevel water_volume_level = 19;                       //水量档位
+    int32 plan_area_clean_time_number = 20;                         //划区清扫次数.
+}
+
+message TuyaSettingMsg
+{
+
+    enum SET
+    {
+        set_virtual_wall = 0;               //设置虚拟墙:涂鸦端设置好之后再发送点集
+        set_penalty_area = 1;               //禁区设置:区域框个数,清扫模式,四个坐标
+        partition_segmentation = 2;         //分区分割:房间id,.返回设置结果(０:失败,1：成功)
+        partition_merge = 4;                //分区合并:n个房间id.返回设置结果(0:失败,1：成功,2:不相邻房间不可合并)
+        partition_restore_the_default = 5;  //分区恢复默认:返回设置结果(0:失败,1：成功)
+        set_room_properties = 6;            //设置房间属性:房间个数,房间id,风机档位,水箱档位,Y字形拖地,清扫次数
+        room_named = 7;                     //房间命名:房间个数,房间id,name_number,room_name
+        clean_order = 8;                    //清扫顺序:房间个数,房间id
+        reset_map = 9;                      //重置地图
+        timing_clean = 10;                  //定时清扫:清扫次数,吸力档位,水箱档位,清扫模式,房间id
+        save_map_to_cloud = 11;             //保存地图到云端
+        save_map_to_local = 12;             //保存地图到本地
+        do_not_disturb = 13;                //安静模式（勿扰模式）
+        reset_edge_brush = 14;              //边刷重置(9000)
+        reset_roll_brush = 15;              //滚刷重置(18000)
+        reset_filter = 16;                  //滤网重置(9000)
+        rag_life_reset = 17;                //拖布重置(9000)
+        set_pack_language = 18;             //设置语音包语言
+        volume_set = 19;                    //设置音量
+        do_not_disturb_switch = 20;         //勿扰开关
+        set_fan_motor = 21;                 //设置当前风机档位
+        set_water_box_motor = 22;           //设置当前水箱档位
+    }
+
+    enum CleanMode
+    {
+        CLEAN = 0;              //扫:1
+        SWEEP = 1;              //拖:2
+        CLEAN_AND_SWEEP = 2;    //扫拖:0
+    };
+    
+    enum CleanMotorState
+    {
+        CLEAN_MOTOR_CLOSE = 0;    //清洁电机关闭
+        CLEAN_MOTOR_OPEN = 1;     //清洁电机开启
+        CLEAN_MOTOR_LOW = 2;      //清洁电机低档
+        CLEAN_MOTOR_MEDIUM = 3;   //清洁电机中档
+        CLEAN_MOTOR_HIGH = 4;     //清洁电机高档
+    };
+
+    enum FanMotorLevel
+    {
+        FAN_MOTOR_CLOSE = 0;            //风机档位关闭
+        FAN_MOTOR_MUTE = 1;             //风机档位静音
+        FAN_MOTOR_NORMAL = 2;           //风机档位正常
+        FAN_MOTOR_STRONG = 3;           //风机档位强力
+        FAN_MOTOR_SUPER_STRONG = 4;     //风机档位超强
+        FAN_MOTOR_NOT_SET = 5;          //风机档位未设置
+    }
+
+    enum WaterBoxLevel
+    {
+        WATER_BOX_LEVEL_CLOSE = 0;      //水箱档位关闭
+        WATER_BOX_LEVEL_ONE = 1;        //水箱档位一
+        WATER_BOX_LEVEL_TWO = 2;        //水箱档位二
+        WATER_BOX_LEVEL_THREE = 3;      //水箱档位三
+        WATER_BOX_LEVEL_NOT_SET = 4;    //水箱档位未设置
+    }
+
+    enum YtypeSweep
+    {
+        YTYPE_SWEEP_CLOSE = 0;      //关闭
+        YTYPE_SWEEP_OPEN = 1;       //打开
+        YTYPE_SWEEP_NOT_SET = 2;    //未设置
+    }
+
+    enum PenaltyAreaMode
+    {
+        ban_clean_and_sweep = 0;    //禁扫拖
+        ban_clean = 1;              //禁扫
+        ban_sweep = 2;              //禁拖
+    }
+
+    SET clean_set = 1;                                              //清扫设置
+
+    //虚拟墙设置:虚拟墙个数,坐标（n）
+    int32 virtual_wall_number = 2;                                  //虚拟墙数
+    repeated Points virtual_wall_points = 3;                        //虚拟墙点集
+
+    //选区清扫:清扫次数,房间个数,房间标识（n）
+    //禁区设置:禁扫拖区域框个数,禁扫点集（n）,禁拖区域框个数,禁拖点集（n）
+    //分区分割:房间标识,坐标（n）(０：失败，１：成功)
+    //分区合并:房间标识（n）(０：失败，１：成功，２：不相邻)
+    //分区恢复默认:命令,０：失败，１：成功
+    //设置房间属性:房间个数,房间标识（n）,风机档位（n）,水箱档位（n）,Y字形拖地（n）,清扫次数（n）
+    //设置房间名称:房间个数,房间标识（n）,名称长度（n）,房间名称（n）
+    //设置清扫顺序:房间个数,房间标识（n）
+    //定时功能:手机系统时区,定时条数,定时是否有效（n）,星期（n）,执行时间（n）,房间个数（n）,房间标识（n）,工作模式（n）:0扫拖,1扫,2拖,风机档位（n）,水箱档位（n）,清扫次数（n）
+    //勿扰时间:手机系统时区,开始时间，结束时间,当天或第二天
+    //勿扰开关
+    //音量
+    //断点续扫
+
+    repeated int32 clean_time_number = 4;                           //清扫次数:选区清扫次数,定时清扫次数（n）,设置房间属性(n)
+    repeated int32 room_number = 5;                                 //房间个数:选区清扫设置,设置房间属性,设置房间名称,设置清扫顺序,定时房间个数（n）
+    repeated int32 room_id = 6;                                     //房间标识:分区分割设置,分区合并设置(n),设置房间属性(n),设置房间名称(n),设置清扫顺序(n),定时功能(n)
+
+    repeated Points partition_segmentation_points = 7;              //分区分割点集
+
+    int32 ban_sweep_penalty_area_number = 8;                        //禁区(禁拖)数量
+    repeated Points ban_sweep_penalty_area_points = 9;              //禁区(禁拖)点集
+    int32 ban_clean_and_sweep_penalty_area_number = 10;             //禁区(禁扫拖)数量
+    repeated Points ban_clean_and_sweep_penalty_area_points = 11;   //禁区(禁扫拖)点集
+
+    repeated FanMotorLevel fan_motor_level = 12;                    //风机档位:设置房间属性(n),定时功能(n)
+    repeated WaterBoxLevel water_box_level = 13;                    //水箱档位:设置房间属性(n),定时功能(n)
+    repeated YtypeSweep ytype_sweep = 14;                           //Y字形拖地:设置房间属性(n)
+
+    repeated int32 name_length = 15;                                //名称长度:设置房间名称(n)
+    repeated string room_name = 17;                                 //房间名称:设置房间名称(n)
+
+    int32 time_zone = 18;                                           //手机系统时区:定时功能,勿扰时间
+    int32 timing_number = 25;                                       //定时条数:定时功能
+    repeated int32 timing_open_or_close = 26;                       //定时打开或关闭:定时功能(n)
+    repeated int32 timing_week = 27;                                //定时执行星期:定时功能(n)
+    repeated int32 timing_start_time = 28;                          //定时开始时间:定时功能(n)
+    repeated CleanMode timing_clean_mode = 29;                      //定时清扫模式:定时功能(n)
+    
+    repeated int32 quiet_day = 30;                                  //勿扰时间(１当天或２第二天)
+    int32 quiet_start_time = 31;                                    //勿扰开始时间
+    int32 quiet_end_time = 32;                                      //勿扰结束时间
+
+    bool do_not_disturb_switch_open = 33;                           //勿扰开关
+    FanMotorLevel current_fan_motor_level = 34;                     //当前风机档位
+    WaterBoxLevel current_water_box_level = 35;                     //当前水箱档位
+    int32 volume = 36;                                              //音量
+    bool breakpoint_continue_to_sweep = 37;                         //断点续扫
+
+    int32 set_result = 38;                                          //设置结果
+    
+}
+
+message RobotStatusMsg
+{
+    enum STATUS{
+        initial = 0;
+        smart = 1;          //自动清扫中
+        zone_clean = 2;     //划区清扫中
+        part_clean = 3;     //局部清扫中
+        cleaning = 4;       //清扫中(备选)
+        paused = 5;         //已暂停
+        goto_pos = 6;       //前往目标点中
+        pos_arrived = 7;    //目标点已到达
+        pos_unarrive = 8;   //目标点不可达
+        goto_charge = 9;    //寻找充电座中
+        charging = 10;      //充电中
+        charge_done = 11;   //充电完成
+        sleep = 12;         //休眠
+        select_room = 13;   //选区清扫中
+        aim_clean = 14;     //指哪扫哪清扫中
+        control_clean = 15; //遥控清扫中
+        explore = 16;       //探索中
+        come_down_from_partner = 17;    //下基站
+        standby = 18;        //待机中
+    };
+
+    enum Fault
+    {
+        no_fault = 0;                   //无故障
+        edge_sweep_fault = 1;           //边刷故障(被缠绕)
+        middle_sweel_fault = 2;         //滚刷故障(被缠绕)
+        left_wheel_fault = 3;           //左轮故障
+        right_wheel_fault = 4;          //右轮故障
+        garbage_box_fault = 5;          //尘盒故障
+        land_check_fault = 6;           //地检故障
+        collision_fault = 7;            //碰撞传感器故障
+        laser_ranging_sensor_fault = 8; //激光测距传感器故障
+        D_TOF_fault = 9;                //D-TOF组件异常
+        edge_sensor_fault = 10;         //沿边传感器故障    
+        low_water_volume_of_water_tank = 11;        //水箱水量低
+        dust_box_is_full = 12;                      //尘盒已满
+        dust_box_removed = 13;                      //尘盒已取出
+        abnormal_installation_of_dust_box = 14;     //机器运行中尘盒未安装或未安装到位
+        abnormal_installation_of_roller_brush = 15; //未安装滚刷/滚刷未安装到位
+        the_drive_wheel_is_entangled  = 16;         //驱动轮被缠绕
+        fan_blocked = 17;                           //风机堵塞
+        battery_is_too_low_return_to_charging = 18; //电量低于20%，将自动返回基站充电
+        battery_is_too_low_stop_cleaning = 19;      //电量过低，停止清扫
+        power_is_less_than_20 = 20;                 //电量低于20%
+        charging_electrode_of_base_station_is_dirty = 21;   //基站充电极片过脏
+        complete_the_cleaning_task  = 22;           //完成清扫任务
+        sweeping_area_blocked  = 23;                //清扫区域被阻挡
+        start_in_restricted_area = 24;              //设备在设置的禁区中启动时
+        cleaning_area_does_not_exist = 25;          //清扫区不存在
+        positioning_abnormality = 26;               //定位异常，无法识别设备当前位置
+        unable_to_continue_working = 27;            //无法继续工作，未检查到异常处
+        unable_to_return_to_base_station = 28;      //无法返回基站
+        water_shortage_in_water_tank = 29;          //净水箱缺水
+        water_tank_not_installed_in_place = 30;     //净水箱未安装到位
+        water_tank_is_full = 31;                    //净水箱已满，无法再抽水
+        dust_collection_bag_is_full = 32;           //集尘袋已满
+        dust_collection_failed = 33;                //集尘失败或未检测到集尘袋
+        sewage_tank_is_full = 34;                   //污水箱已满
+        sewage_tank_cannot_be_recycled = 35;        //污水箱无法回收
+        heating_system_fault = 36;                  //加热系统故障
+        mop_drying_tips = 37;                       //拖布风干提示
+        enclosure_tank_cover_not_fully_closed = 38; //未完全关闭外壳水箱盖
+        housing_dust_box_not_fully_closed = 39;     //未完全关闭外壳尘盒
+        
+        broom_water = 40;                           //扫地机加水
+        sweeping_machine_pumping = 41;              //扫地机抽水
+        host_start = 42;                            //主机启动
+        host_pause = 43;                            //主机暂停
+        suspension_sensor_fault = 44;               //悬空传感器故障
+        not_in_horizontal_plane = 45;               //未将主机放到水平面活动(抱起)
+        check_the_radar_upper_cover = 46;           //请检查主机顶部雷达上盖是否被有被挤压或者卡住
+        abnormal_noise_of_main_engine = 47;         //主机异响
+        sudden_stop = 48;                           //机器在运行中突然停止工作
+        not_start_after_charging = 49;              //充电后不开机
+        rebuild_drawing = 50;                       //定位失败，重新建图
+        pause_during_running = 51;                  //跑机中暂停,前进阻力异常
+        // mop_not_installed = 52;                     //拖布未安装
+        dust_duct_blockage = 53;                    //集尘尘道堵塞
+        excessive_dust = 54;                        //尘盒过滤棉灰尘过多
+
+        pick_up = 56;                               //被抱起
+        dangling_handling = 57;                     //悬空中
+        trapped = 58;                               //被困
+        mop_brush_motor_is_not_setup = 59;          //抹布未安装到位
+        edge_brush_motor_is_not_setuo = 60;         //边刷未安装到位
+        edge_sweep_err = 61;                        //边刷故障
+        middle_sweel_err = 62;                      //滚刷故障
+        battery_error = 63;                         //电池异常
+        fan_motor_error = 64;                       //风机故障
+        mop_brush_motor_is_twine = 65;              //抹布被缠绕
+        mop_brush_motor_is_err = 66;                //抹布故障，不工作
+
+        //基站状态
+        partner_clean_water_box_is_not_exist = 67;  //净水箱不在
+        partner_waste_water_box_is_not_exist = 68;  //污水箱不在
+        partner_water_overflow = 69;                //水槽溢水
+        partner_dust_collection_err = 70;           //伴侣集尘异常 
+        partner_clean_mop_err = 71;                 //伴侣清洗拖布异常
+        partner_drying_mop_err = 72;                //烘干拖布异常,风机堵塞
+        partner_air_blower_error_err = 73;          //风机异常
+        dry_mop_temperature_err = 74;               //烘干拖布温度异常
+
+        start_up_when_slant = 75;                   //启动时扫地机倾斜
+    }
+
+    STATUS current_status = 1;                                      //当前状态
+    Fault current_fault = 2;                                        //当前故障情况
+
+}
+
+message DeviceMsg
+{
+
+    string Wifi_name = 1;                                          //设备配网Wifi名称
+    int32 RSSI = 2;                                                //Wifi信号强度
+    string ID = 3;                                                 //WifiIP地址
+    string Mac = 4;                                                //设备Mac地址
+    string MCU_Verssion = 5;                                       //MCU版本
+    string Firmware_Version = 6;                                   //固件版本
+    string device_SN = 7;                                          //设备SN码
+    string module_UUID = 8;                                        //涂鸦激活UUID码
+}
+
+message CleanRecordMsg
+{
+
+    double clean_time = 1;                 //清扫时间
+    double clean_area = 2;                 //清扫面积
+    int32 clean_time_number = 3;           //清扫次数
+    double all_clean_time = 4;             //总清扫时间
+    double all_clean_area = 5;             //总清扫面积
+    int32 all_clean_time_number = 6;       //总清扫次数
+    double clean_percentage = 7;           //清扫率
+
+}
+
+message CleanDeviceMsg
+{
+    int32 edge_brush_life = 1;              //边刷剩余寿命
+    int32 roll_brush_life = 2;              //滚刷剩余寿命
+    int32 filter_life = 3;                  //滤芯剩余寿命
+    int32 rag_life = 4;                     //拖布剩余寿命
+}
+
+message LanguagePackMsg
+{
+    enum DownloadStatus
+    {
+        DOWNLOAD_FAILED = 0;                //下载失败
+        INSTALLING = 1;                     //安装中
+        INSTALL_SUCCESS= 2;                 //安装成功
+        USING = 3;                          //使用中
+    }
+
+    enum LanguageType
+    {
+        SIMPLIFIED_CHINESE = 0;             //简体中文
+        TRADITIONAL_CHINESE = 1;            //繁体中文
+        ENGLISH = 2;                        //英语
+        GRTMAN = 3;                         //德语
+        FRENCH = 4;                         //法语
+        RUSSIAN = 5;                        //俄语
+        SPANISH = 6;                        //西班牙语
+        KOREAN = 7;                         //韩语
+        LATIN = 8;                          //拉丁语
+        PORTUGUESE = 9;                     //葡萄牙语
+        JAPANESE = 10;                      //日语
+        ITALIAN = 11;                       //意大利语
+    }
+
+    DownloadStatus download_status = 1;                             //语言包下载状态
+    int32 download_and_install_schedu = 2;                          //下载安装进度
+
+    LanguageType language = 3;                                      //语音包语言
+    int32 check_code_length = 4;                                    //校验码长度
+    string check_code = 5;                                          //校验码
+    int32 language_pack_url_length = 6;                             //语言包链接长度
+    string language_pack_url = 7;                                   //语言包链接
+
+}
+
+enum TuyaStartupMode
+{
+    unused = 0;
+    explore_mode = 1;           //探索模式
+    clean_mode = 2;             //扫地模式
+    sweep_mode = 3;             //拖地模式
+    clean_and_sweep_mode = 4;   //扫拖模式
+    recharge_mode = 5;          //回冲模式
+    timing_mode = 6;            //定时模式
+    aim_point = 7;              //定点清扫
+    select_area_clean = 8;      //选区域清扫
+    edge_clean = 9;             //沿边清扫
+}
+
+message TuyaDpMsg
+{
+
+    CleanDeviceMsg clean_device_msg = 1;        //清扫设备信息上报给涂鸦app
+    CleanRecordMsg clean_record_msg = 2;        //清扫记录上报给涂鸦app
+    DeviceMsg device_msg = 3;                   //设备信息上报给涂鸦app
+    int32 battery_percentage = 4;               //电量百分比上报给涂鸦app
+    RobotStatusMsg robot_status_msg = 5;        //机器人当前工作状态上报给涂鸦app
+
+    LanguagePackMsg language_pack_msg = 6;      //语言包信息下发和上报
+    TuyaSettingMsg tuya_setting_msg = 7;        //涂鸦设置信息下发和上报
+    TuyaCommandMsg tuya_command_msg = 8;        //涂鸦命令信息下发
+    int32 command_or_setting = 9;               //０为设置，１为命令，２
+    TuyaStartupMode startup_mode = 10;          //启动模式
+
+}

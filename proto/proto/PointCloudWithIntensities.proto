@@ -1,0 +1,39 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+
+import "Header.proto";
+
+    // 激光雷达错误
+    enum LidarErrorType {
+        NO_ERROR = 0;
+        LIDAR_COMMUNICATION_ERROR = 1; // 通信错误
+        LIDAR_HARDWARE_ERROR = 2;      // 硬件错误
+    }
+
+    message Point3dWithTime{//带时间的三维点
+
+	double x = 1;       //单位:m(下同)
+	double y = 2;
+	double z = 3;
+    double time = 4;    //单位:s
+    }
+
+    message PointCloudWithIntensities{
+        Header header = 1;
+
+        repeated Point3dWithTime  points = 2;   //带时间的三维点集
+        repeated double intensities = 3;        //强度信息
+        LidarErrorType lidar_error_type = 4;    //雷达错误类型
+        int32 lidar_error_code = 5;             //雷达错误码，值为 0 时没错误
+    };

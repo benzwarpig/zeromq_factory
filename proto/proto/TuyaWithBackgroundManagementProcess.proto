@@ -1,0 +1,47 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+syntax = "proto3";
+package LSLAM;
+import "ToDaemonMsg.proto";
+
+enum TuyaRobotTaskType 
+{
+    TUYA_UNUSED_TASK = 0;
+    TUYA_EXPLORE_TASK = 1;                   // 探索任务
+    TUYA_SWEEP_TASK = 2;                     // 清扫任务
+    TUYA_MOP_TASK = 3;                     	 // 拖地任务
+    TUYA_SWEEP_AND_MOP_TASK = 4;           	 // 扫拖任务
+    TUYA_RECHARGE_TASK = 5;                  // 回充任务
+}
+
+enum RemoteControlDirection
+{
+    DEFAIL = 0;                         
+    FORWARD = 1;                        //前进
+    BACKWARD = 2;                       //后退
+    TRUN_LEFT = 3;                      //左拐
+    TURN_RIGHT = 4;                     //右拐
+    STOP = 5;                           //暂停
+    
+}
+
+message TuyaWithBackgroundManagementProcess
+{
+    TuyaRobotTaskType tuya_robot_task = 1;        //扫地机任务
+    int32 tuya_map_id = 2;                        //涂鸦端当前使用的地图id
+    int32 start_or_pause = 3;                     //清扫(拖地)开始或者暂停,1是开始、2是暂停
+    int32 switch_map = 4;                         //是否切换地图，1是切换地图、2是不切换地图
+    int32 select_area_clean = 5;                  //选区清扫
+    int32 aim_point_clean = 6;                    //定点清扫
+    int32 plan_area_clean = 7;                    //划区清扫
+    RobotStartUpTaskType tuya_robot_su_task = 8;  //涂鸦传递给守护进程的启动扫地机的任务 
+    int32 do_not_disturb_switch = 9;               //勿扰开关
+    RemoteControlDirection direction = 10;         //遥控方向
+}

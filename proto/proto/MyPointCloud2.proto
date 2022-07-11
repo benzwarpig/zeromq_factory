@@ -1,0 +1,36 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+
+import "Header.proto";
+
+    message Point4d{
+
+	double x = 1;
+	double y = 2;
+	double z = 3;
+	double k = 4;
+    }
+
+    message MyPointCloud2{
+        Header header = 1;
+
+        //2D structure of the point cloud. If the cloud is unordered, height is
+        //1 and width is the length of the point cloud.
+        uint32 height = 2;
+        uint32 width = 3; //point cloud中点的数量
+
+        repeated Point4d  points = 4; //points中存储Point4d类型数据，Point4d描述一个点
+        bool is_dense = 5;
+
+    };

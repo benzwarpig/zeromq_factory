@@ -1,0 +1,18 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+message WheelsVelocity{
+
+int32 left_wheel_velocity = 1;//机器人左轮的速度，单位mm/s
+int32 right_wheel_velocity = 2;//机器人右轮的速度，单位mm/s
+}

@@ -1,4 +1,4 @@
-build
+
 # Prerequisites
 *.d
 
@@ -13,7 +13,6 @@ build
 *.pch
 
 # Compiled Dynamic libraries
-*.so
 *.dylib
 *.dll
 
@@ -24,10 +23,23 @@ build
 # Compiled Static libraries
 *.lai
 *.la
-*.a
 *.lib
 
 # Executables
 *.exe
 *.out
 *.app
+
+#build part
+/build
+/.vscode
+/cmake-build-debug
+/.idea
+/.cache
+/.history
+/.clang-tidy
+/generated
+
+#test build part
+/test/app_area_clean_test/build
+/test/app_select_area_clean_test/build

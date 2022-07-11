@@ -1,0 +1,30 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+
+syntax = "proto3";
+package LSLAM;
+
+import "MetricLabel.proto";
+import "HistogramBucket.proto";
+
+message Metric {
+        enum Type //枚举消息类型
+        {
+        TYPE_COUNTER = 0; //proto3版本中，首成员必须为0，成员不应有相同的值
+        TYPE_GAUGE = 1;
+        TYPE_HISTOGRAM = 2;
+        }
+
+        int32 type=1;
+        repeated MetricLabel labels=2;
+        double value=3;
+        repeated HistogramBucket counts_by_bucket=4;
+}

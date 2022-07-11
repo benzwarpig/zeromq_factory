@@ -1,0 +1,75 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+import "Point.proto";
+import "MyOccupancyGrid.proto";
+
+enum SaveAndReadOptions
+{
+	LOCAL_LAYER_INFO = 0;                           //保存清扫层地图
+	CONTINUE_CLEAN_AT_BREAK_POINT_INFO = 1;        	//保存断点续扫信息
+	COMPLETE_CLEAN = 2;                            	//保存是否清扫完毕
+	ADJUSTED_ANGLE = 3;								//调整角度
+}
+
+//断点续扫
+message ContinueCleanAtBreakPoint{
+	uint32 break_point_area_id = 1;					//断点续扫时任务ID
+	repeated uint32 all_clean_tasks = 2;			//本次清扫任务ID
+	repeated uint32 cleaned_area_id = 3;			//已清扫的区域ID
+	uint32 map_id = 4;								//本次使用的地图id
+	uint32 clean_and_mop_state = 5;					//机器人控制命令(1-扫地 2-拖地 3-扫拖)
+	Point break_point = 6;							//断点
+}
+
+//地图信息
+message MapInfo{
+	double saved_origin_x = 1;		//地图偏移量x
+	double saved_origin_y = 2;		//地图偏移量y
+	uint32 width = 3;				//地图宽
+	uint32 height = 4;				//地图高
+	repeated int32 map_data = 5;	//地图值
+}
+
+//边界线点集
+message DivisionLineInfo{
+	repeated int32 division_lines_length = 1;		//各边界线的长度
+	repeated Point division_lines_point = 2;		//边界线点集
+}
+
+//虚拟墙点集
+message VirtualWallInfo{
+	repeated int32 virtual_walls_length = 1;		//各虚拟墙长度
+	repeated Point virtual_walls_point = 2;			//虚拟墙点集
+}
+
+//配置文件相关信息
+message ConfigurationItems{
+	MapInfo local_layer_info = 1;										//清扫层地图
+	ContinueCleanAtBreakPoint continue_clean_at_break_point_info = 2;	//断点续扫信息
+
+	bool complete_clean = 3; 											//完成清扫
+	bool is_adjusted_angle = 4;											//机器人是否摆正过角度
+
+}
+
+//分割地图与其他地图对应信息
+message MapInfoOfPrograms{
+	int32 map_id = 1; 								//地图id
+	MyOccupancyGrid segment_map = 2;				//已分割的地图数据
+	bytes pbStream_file_name = 3;					//pbStream地图名称
+	double map_rotation_angle = 4;					//地图旋转角度
+	DivisionLineInfo division_line_info = 5;		//边界线
+	VirtualWallInfo virtual_wall_info = 6;			//虚拟墙
+	repeated uint32 rooms_clean_way = 7;			//各个房间默认清扫方式(按1-n的顺序)
+}
+

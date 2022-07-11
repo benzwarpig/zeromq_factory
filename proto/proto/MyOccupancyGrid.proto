@@ -1,0 +1,31 @@
+// See README.txt for information and build instructions.
+//
+// Note: START and END tags are used in comments to define sections used in
+// tutorials.  They are not part of the syntax for Protocol Buffers.
+//
+// To get an in-depth walkthrough of this file and the related examples, see:
+// https://developers.google.com/protocol-buffers/docs/tutorials
+
+// [START declaration]
+
+syntax = "proto3";
+package LSLAM;
+
+import "google/protobuf/timestamp.proto";
+import "Header.proto";
+import "Pose.proto";
+    message MapMetaData{
+        google.protobuf.Timestamp map_load_time = 1;
+        float resolution = 2;
+        uint32 width = 3;
+        uint32 height = 4;
+        Pose origin = 5;
+    };
+
+    message MyOccupancyGrid{
+        Header header = 1;
+        MapMetaData  info = 2;
+        repeated int32 data = 3;
+        double saved_origin_x_ =4;
+        double saved_origin_y_ =5;
+    };
