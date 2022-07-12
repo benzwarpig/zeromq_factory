@@ -53,78 +53,101 @@ public:
     zmq::socket_t  socket;
 }; // ZeroMqImpl
 
-template < typename MsgType, typename = typename std::enable_if< std::is_base_of< google::protobuf::Message, MsgType >::value >::type >
 class ValueZeroMqPublish
 {
 public:
-    ValueZeroMqPublish( const std::string& ip )
-    {
-        zeromq_pack = std::make_unique< ZeroMqImpl >( ZMQ_PUB );
-        zeromq_pack->socket.bind( ip );
-    };
     ~ValueZeroMqPublish(){};
 
 public:
+    template < typename MsgType >
+    void RegisterPublisher( const std::string& ip )
+    {
+        auto tmp = std::make_shared< ZeroMqImpl >( ZMQ_PUB );
+        tmp->socket.bind( ip );
+
+        zeromq_pack.emplace( std::make_pair( MsgType().GetTypeName(), std::move( tmp ) ) );
+    }
+
+    template < typename MsgType >
     void PublishProtoMsg( const MsgType& msg )
     {
         std::string tmp;
         if ( msg.SerializeToString( &tmp ) )
         {
-            zeromq_pack->socket.send( zmq::const_buffer( tmp.data(), tmp.size() ) );
+            if ( 0 != zeromq_pack.count( msg.GetTypeName() ) )
+            {
+                zeromq_pack[ msg.GetTypeName() ]->socket.send( zmq::const_buffer( tmp.data(), tmp.size() ) );
+            }
+            else
+            {
+                spdlog::error( "without the member of this pack , {}", msg.GetTypeName() );
+            }
         }
     }
 
 private:
-    std::unique_ptr< ZeroMqImpl > zeromq_pack;
+    ValueZeroMqPublish(){};
+
+    std::unordered_map< std::string, std::shared_ptr< ZeroMqImpl > > zeromq_pack;
 }; // ValueZeroMqPublish
 
-template < typename MsgType, typename = typename std::enable_if< std::is_base_of< google::protobuf::Message, MsgType >::value >::type >
 class ValueZeroMqSubscribe
 {
-    using CallBackFuncType = std::function< void( const MsgType& msg ) >;
-
 public:
-    ValueZeroMqSubscribe( const std::string& ip, CallBackFuncType callback ) :
-        stop_flag( false )
-    {
-        zeromq_pack = std::make_unique< ZeroMqImpl >( ZMQ_SUB );
-        zeromq_pack->socket.set( zmq::sockopt::rcvtimeo, 10 );
-        zeromq_pack->socket.set( zmq::sockopt::conflate, 1 );
-        zeromq_pack->socket.set( zmq::sockopt::subscribe, "" );
-        zeromq_pack->socket.connect( ip );
-
-        zeromq_thread = std::make_unique< std::thread >( &ValueZeroMqSubscribe< MsgType >::SubscribeThread, this, std::ref( callback ) );
-    };
+    ValueZeroMqSubscribe() :
+        stop_flag( false ){};
 
     ~ValueZeroMqSubscribe(){};
 
     void StopThread()
     {
         stop_flag = true;
-        if ( zeromq_thread->joinable() )
+        for ( auto& tmp : zeromq_threads )
         {
-            zeromq_thread->join();
+            if ( tmp->joinable() )
+            {
+                tmp->join();
+            }
         }
     }
 
+    template < typename CallBackFuncType, typename MsgType, typename = typename std::enable_if< std::is_base_of< google::protobuf::Message, MsgType >::value >::type >
+    void RegisterPublisher( const std::string& ip, CallBackFuncType callback )
+    {
+        std::shared_ptr< ZeroMqImpl > zeromq_pack = std::make_shared< ZeroMqImpl >( ZMQ_SUB );
+        zeromq_pack->socket.set( zmq::sockopt::rcvtimeo, 10 );
+        zeromq_pack->socket.set( zmq::sockopt::conflate, 1 );
+        zeromq_pack->socket.set( zmq::sockopt::subscribe, "" );
+        zeromq_pack->socket.connect( ip );
+
+        std::shared_ptr< std::thread > zeromq_thread = std::make_shared< std::thread >( &ValueZeroMqSubscribe::SubscribeThread< MsgType >, this, std::ref( callback ) );
+
+        zeromq_packs.emplace( std::make_pair( MsgType().GetTypeName(), std::move( zeromq_pack ) ) );
+        zeromq_threads.push_back( std::move( zeromq_thread ) );
+    }
+
 private:
+    template < typename CallBackFuncType, typename MsgType, typename = typename std::enable_if< std::is_base_of< google::protobuf::Message, MsgType >::value >::type >
     void SubscribeThread( CallBackFuncType call_back )
     {
         MsgType msg;
         while ( !stop_flag )
         {
-            zmq::message_t str_data;
-            if ( !zeromq_pack->socket.recv( str_data ) )
+            if ( 0 != zeromq_packs.count( msg.GetTypeName() ) )
             {
-                continue;
-            }
-            if ( msg.ParseFromString( str_data.to_string() ) )
-            {
-                call_back( msg );
-            }
-            else
-            {
-                spdlog::info( "{} parse failure!!!!", MsgType().GetTypeName() );
+                zmq::message_t str_data;
+                if ( !zeromq_packs[ msg.GetTypeName() ]->socket.recv( str_data ) )
+                {
+                    continue;
+                }
+                if ( msg.ParseFromString( str_data.to_string() ) )
+                {
+                    call_back( msg );
+                }
+                else
+                {
+                    spdlog::info( "{} parse failure!!!!", MsgType().GetTypeName() );
+                }
             }
         }
     }
@@ -132,10 +155,44 @@ private:
 private:
     bool stop_flag;
 
-    std::unique_ptr< ZeroMqImpl > zeromq_pack;
+    std::unordered_map< std::string, std::shared_ptr< ZeroMqImpl > > zeromq_packs;
 
-    std::unique_ptr< std::thread > zeromq_thread;
+    std::vector< std::shared_ptr< std::thread > > zeromq_threads;
 
 }; // ValueZeroMqSubscribe
+
+// template < class ProductType >
+// class MsgFactory
+// {
+// public:
+//     MsgFactory(){};
+//     ~MsgFactory(){};
+
+//     static MsgFactory& GetInstance()
+//     {
+//         static MsgFactory obj;
+//         return obj;
+//     }
+
+// private:
+//     MsgFactory( const MsgFactory& )            = delete;
+//     MsgFactory& operator=( const MsgFactory& ) = delete;
+
+// public:
+//     bool RegistrateProductToFactory( const std::string& id )
+//     {
+//         ProductionLine.insert( { id, std::make_shared< ProductType >( id ) } );
+//     }
+
+//     template < typename MsgType, typename = typename std::enable_if< std::is_base_of< google::protobuf::Message, MsgType >::value >::type >
+//     bool RegistrateProductToFactory( const std::string& id, std::function< void( const MsgType& msg ) > callback )
+//     {
+//         ProductionLine.insert( { id, std::make_shared< ProductType >( id, callback ) } );
+//     }
+
+// private:
+//     std::unordered_map< std::string, std::shared_ptr< ProductType > > ProductionLine;
+
+// }; // MsgFactory
 
 } // namespace ZeroMqFactory

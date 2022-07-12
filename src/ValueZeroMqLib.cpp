@@ -2,12 +2,15 @@
 
 #include "MyOccupancyGrid.pb.h"
 
+using namespace ZeroMqFactory;
+
 int main( void )
 {
     spdlog::info( "zeromq factory open !" );
     LSLAM::MyOccupancyGrid msg;
 
-    // ZeroMqFactory::ValueZeroMqPublish msg_publish("192.168.8.29");
+    // ValueZeroMqPublish< LSLAM::MyOccupancyGrid > msg_publish( "tcp://*:1234" );
+    // MsgFactory< ValueZeroMqPublish< LSLAM::MyOccupancyGrid > >::GetInstance().RegistrateProductToFactory( "tcp://*:1234" );
 
     while ( 1 )
     {
