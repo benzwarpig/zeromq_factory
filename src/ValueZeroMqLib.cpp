@@ -7,14 +7,19 @@ using namespace ZeroMqFactory;
 int main( void )
 {
     spdlog::info( "zeromq factory open !" );
-    LSLAM::MyOccupancyGrid msg;
 
-    // ValueZeroMqPublish< LSLAM::MyOccupancyGrid > msg_publish( "tcp://*:1234" );
-    // MsgFactory< ValueZeroMqPublish< LSLAM::MyOccupancyGrid > >::GetInstance().RegistrateProductToFactory( "tcp://*:1234" );
+    ZeroMqFactory::ValueZeroMqPublish::GetInstance().RegisterPublisher< LSLAM::MyOccupancyGrid >( "tcp://*:1234" );
+
+    ZeroMqFactory::ValueZeroMqSubscribe::GetInstance().RegisterPublisher< LSLAM::MyOccupancyGrid >( "tcp://*:1234",
+                                                                                                    []( const LSLAM::MyOccupancyGrid& msg ) {
+                                                                                                        spdlog::info( "Subscribe once" );
+                                                                                                    } );
 
     while ( 1 )
     {
-        spdlog::info( "zeromq factory open !" );
+        LSLAM::MyOccupancyGrid msg;
+        ZeroMqFactory::ValueZeroMqPublish::GetInstance().PublishProtoMsg< LSLAM::MyOccupancyGrid >( msg );
+
         std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ) );
     }
 

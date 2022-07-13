@@ -59,6 +59,12 @@ public:
     ~ValueZeroMqPublish(){};
 
 public:
+    static ValueZeroMqPublish& GetInstance()
+    {
+        static ValueZeroMqPublish tmp;
+        return tmp;
+    }
+
     template < typename MsgType >
     void RegisterPublisher( const std::string& ip )
     {
@@ -99,6 +105,12 @@ public:
 
     ~ValueZeroMqSubscribe(){};
 
+    static ValueZeroMqSubscribe& GetInstance()
+    {
+        static ValueZeroMqSubscribe tmp;
+        return tmp;
+    }
+
     void StopThread()
     {
         stop_flag = true;
@@ -111,7 +123,7 @@ public:
         }
     }
 
-    template < typename CallBackFuncType, typename MsgType, typename = typename std::enable_if< std::is_base_of< google::protobuf::Message, MsgType >::value >::type >
+    template < typename MsgType, typename CallBackFuncType = std::function< void( MsgType ) > >
     void RegisterPublisher( const std::string& ip, CallBackFuncType callback )
     {
         std::shared_ptr< ZeroMqImpl > zeromq_pack = std::make_shared< ZeroMqImpl >( ZMQ_SUB );
@@ -127,7 +139,7 @@ public:
     }
 
 private:
-    template < typename CallBackFuncType, typename MsgType, typename = typename std::enable_if< std::is_base_of< google::protobuf::Message, MsgType >::value >::type >
+    template < typename MsgType, typename CallBackFuncType = std::function< void( MsgType ) > >
     void SubscribeThread( CallBackFuncType call_back )
     {
         MsgType msg;
