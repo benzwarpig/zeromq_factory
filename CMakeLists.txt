@@ -33,27 +33,27 @@ include_directories(
     ./include
     ${Boost_INCLUDE_DIRS}
     ${ZMQ_INCLUDE_DIR}
-    ${project_dir}/proto/proto
+    ${project_dir}/proto/proto_source
 )
 
 add_executable(
     ${PROJECT_NAME}
     ./src/ValueZeroMqLib.cpp
-    ${project_dir}/proto/proto/MyOccupancyGrid.pb.cc # 导入外部proto文件
-    ${project_dir}/proto/proto/Header.pb.cc
-    ${project_dir}/proto/proto/Pose.pb.cc
-    ${project_dir}/proto/proto/Point.pb.cc
-    ${project_dir}/proto/proto/Quaternion.pb.cc
-    ${project_dir}/proto/proto/MyTransformStamped.pb.cc
-    ${project_dir}/proto/proto/Transform.pb.cc
-    ${project_dir}/proto/proto/Vector3d.pb.cc
-    ${project_dir}/proto/proto/MyPointCloud2.pb.cc
-    ${project_dir}/proto/proto/RangeSensorMsg.pb.cc
-    ${project_dir}/proto/proto/CliffSensorMsg.pb.cc
-    ${project_dir}/proto/proto/STM32MsgToCostMap.pb.cc
-    ${project_dir}/proto/proto/RobotPose.pb.cc
-    ${project_dir}/proto/proto/CostmapMsgToPlanning.pb.cc
-    ${project_dir}/proto/proto/cloudPCL.pb.cc
+    ${project_dir}/proto/proto_source/MyOccupancyGrid.pb.cc # 导入外部proto文件
+    ${project_dir}/proto/proto_source/Header.pb.cc
+    ${project_dir}/proto/proto_source/Pose.pb.cc
+    ${project_dir}/proto/proto_source/Point.pb.cc
+    ${project_dir}/proto/proto_source/Quaternion.pb.cc
+    ${project_dir}/proto/proto_source/MyTransformStamped.pb.cc
+    ${project_dir}/proto/proto_source/Transform.pb.cc
+    ${project_dir}/proto/proto_source/Vector3d.pb.cc
+    ${project_dir}/proto/proto_source/MyPointCloud2.pb.cc
+    ${project_dir}/proto/proto_source/RangeSensorMsg.pb.cc
+    ${project_dir}/proto/proto_source/CliffSensorMsg.pb.cc
+    ${project_dir}/proto/proto_source/STM32MsgToCostMap.pb.cc
+    ${project_dir}/proto/proto_source/RobotPose.pb.cc
+    ${project_dir}/proto/proto_source/CostmapMsgToPlanning.pb.cc
+    ${project_dir}/proto/proto_source/cloudPCL.pb.cc
 )
 
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} spdlog::spdlog m pthread ${ZMQ_LIBRARIES} ${PROTOBUF_LIBRARIES})

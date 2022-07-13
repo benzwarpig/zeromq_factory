@@ -1,3 +1,5 @@
+proto/proto_source
+.vscode
 build
 # Prerequisites
 *.d
