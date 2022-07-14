@@ -28,6 +28,8 @@ endif()
 set(project_dir ${CMAKE_CURRENT_SOURCE_DIR})
 message("${project_dir}" ${project_dir})
 
+execute_process(COMMAND sh "${project_dir}/proto/run_me.sh")
+
 include_directories(
     .
     ./include
