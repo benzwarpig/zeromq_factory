@@ -66,7 +66,7 @@ public:
     }
 
     template < typename MsgType >
-    void RegisterPublisher( const std::string& ip )
+    void RegisterZMQNode( const std::string& ip )
     {
         auto tmp = std::make_shared< ZeroMqImpl >( ZMQ_PUB );
         tmp->socket.bind( ip );
@@ -101,7 +101,10 @@ class ValueZeroMqSubscribe
 {
 public:
     ValueZeroMqSubscribe() :
-        stop_flag( false ){};
+        stop_flag( false )
+    {
+        SubscribeListener = std::make_shared< std::thread >();
+    };
 
     ~ValueZeroMqSubscribe(){};
 
@@ -124,7 +127,7 @@ public:
     }
 
     template < typename MsgType, typename CallBackFuncType = std::function< void( MsgType ) > >
-    void RegisterPublisher( const std::string& ip, CallBackFuncType callback )
+    void RegisterZMQNode( const std::string& ip, CallBackFuncType callback )
     {
         std::shared_ptr< ZeroMqImpl > zeromq_pack = std::make_shared< ZeroMqImpl >( ZMQ_SUB );
         zeromq_pack->socket.set( zmq::sockopt::rcvtimeo, 10 );
@@ -132,7 +135,7 @@ public:
         zeromq_pack->socket.set( zmq::sockopt::subscribe, "" );
         zeromq_pack->socket.connect( ip );
 
-        std::shared_ptr< std::thread > zeromq_thread = std::make_shared< std::thread >( &ValueZeroMqSubscribe::SubscribeThread< MsgType >, this, std::ref( callback ) );
+        std::shared_ptr< std::thread > zeromq_thread = std::make_shared< std::thread >( &ValueZeroMqSubscribe::SubscribeThread< MsgType >, this, std::move( callback ) );
 
         zeromq_packs.emplace( std::make_pair( MsgType().GetTypeName(), std::move( zeromq_pack ) ) );
         zeromq_threads.push_back( std::move( zeromq_thread ) );
@@ -140,7 +143,7 @@ public:
 
 private:
     template < typename MsgType, typename CallBackFuncType = std::function< void( MsgType ) > >
-    void SubscribeThread( CallBackFuncType call_back )
+    void SubscribeThread( CallBackFuncType&& call_back )
     {
         MsgType msg;
         while ( !stop_flag )
@@ -171,7 +174,10 @@ private:
 
     std::vector< std::shared_ptr< std::thread > > zeromq_threads;
 
+private:
+    static std::shared_ptr< std::thread > SubscribeListener;
 }; // ValueZeroMqSubscribe
+std::shared_ptr< std::thread > ValueZeroMqSubscribe::SubscribeListener = nullptr;
 
 // template < class ProductType >
 // class MsgFactory
