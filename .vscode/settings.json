@@ -64,6 +64,7 @@
         "cinttypes": "cpp",
         "typeindex": "cpp",
         "typeinfo": "cpp",
-        "any": "cpp"
+        "any": "cpp",
+        "*.inc": "cpp"
     }
 }

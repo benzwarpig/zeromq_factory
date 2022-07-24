@@ -1,33 +1,64 @@
 #include "ValueZeroMqLib.h"
 
+// 展示ZeroMq的用法(发布订阅)
+#if 0
+
 #include "MyOccupancyGrid.pb.h"
+#include "RobotPose.pb.h"
 
 using namespace ZeroMqFactory;
 
-void MyOccupancyGridCallBack( const LSLAM::MyOccupancyGrid& msg )
+template < typename MsgType = std::false_type::value_type >
+void SubscribeCallBack( void* msg )
 {
-    spdlog::info( "Subscribe once {} {}", msg.saved_origin_x_(), msg.saved_origin_y_() );
+    spdlog::error( "error callback msg !!!!" );
+}
+
+template <>
+void SubscribeCallBack< LSLAM::MyOccupancyGrid >( void* msg )
+{
+    LSLAM::MyOccupancyGrid* mmsg = static_cast< LSLAM::MyOccupancyGrid* >( msg );
+
+    spdlog::info( "saved_origin_x : {},saved_origin_y : {}", mmsg->saved_origin_x_(), mmsg->saved_origin_y_() );
+}
+
+template <>
+void SubscribeCallBack< LSLAM::RobotPose >( void* msg )
+{
+    LSLAM::RobotPose* mmsg = static_cast< LSLAM::RobotPose* >( msg );
+
+    spdlog::info( "x : {},y : {} ,theta: {}", mmsg->x(), mmsg->y(), mmsg->theta() );
 }
 
 int main( void )
 {
     spdlog::info( "zeromq factory open !" );
 
+    /* 创建一个发布LSLAM::MyOccupancyGrid消息类型的生产者 */
     ValueZeroMqPublish::GetInstance().RegisterZMQNode< LSLAM::MyOccupancyGrid >( "tcp://*:1234" );
+    ValueZeroMqPublish::GetInstance().RegisterZMQNode< LSLAM::RobotPose >( "tcp://*:1235" );
 
-    ValueZeroMqSubscribe::GetInstance().RegisterZMQNode< LSLAM::MyOccupancyGrid >( "tcp://localhost:1234", std::bind( MyOccupancyGridCallBack, std::placeholders::_1 ) );
+    /* 创建一个订阅LSLAM::MyOccupancyGrid消息类型的消费者 */
+    ValueZeroMqSubscribe::GetInstance().RegisterZMQNode< LSLAM::MyOccupancyGrid >( "tcp://localhost:1234", std::move( SubscribeCallBack< LSLAM::MyOccupancyGrid > ) );
+    ValueZeroMqSubscribe::GetInstance().RegisterZMQNode< LSLAM::RobotPose >( "tcp://localhost:1235", std::move( SubscribeCallBack< LSLAM::RobotPose > ) );
 
     while ( 1 )
     {
         LSLAM::MyOccupancyGrid msg;
+        msg.set_saved_origin_x_( 9999 );
+        msg.set_saved_origin_y_( 8888 );
+        ValueZeroMqPublish::GetInstance().PublishProtoMsg( msg );
 
-        msg.set_saved_origin_x_( 1000 );
-        msg.set_saved_origin_y_( 200 );
-
-        ValueZeroMqPublish::GetInstance().PublishProtoMsg< LSLAM::MyOccupancyGrid >( msg );
+        LSLAM::RobotPose pose_msg;
+        pose_msg.set_x( 5 );
+        pose_msg.set_y( 10 );
+        pose_msg.set_theta( 900 );
+        ValueZeroMqPublish::GetInstance().PublishProtoMsg( pose_msg );
 
         std::this_thread::sleep_for( std::chrono::milliseconds( 1000 ) );
     }
 
     return 0;
 }
+
+#endif
