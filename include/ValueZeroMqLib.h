@@ -21,19 +21,6 @@
 
 namespace ZeroMqFactory {
 
-template < class ProductType >
-class AbstractZeroMqInterface
-{
-public:
-protected:
-    AbstractZeroMqInterface(){};
-    virtual ~AbstractZeroMqInterface(){};
-
-private:
-    AbstractZeroMqInterface( const AbstractZeroMqInterface& )            = delete;
-    AbstractZeroMqInterface& operator=( const AbstractZeroMqInterface& ) = delete;
-}; // AbstractZeroMqInterface
-
 class ZeroMqImpl
 {
 public:
@@ -42,7 +29,7 @@ public:
     {
     }
 
-    virtual ~ZeroMqImpl()
+    ~ZeroMqImpl()
     {
         socket.close();
         context.close();
@@ -55,8 +42,12 @@ public:
 
 class ValueZeroMqPublish
 {
-public:
+private:
+    ValueZeroMqPublish(){};
     ~ValueZeroMqPublish(){};
+
+    ValueZeroMqPublish( const ValueZeroMqPublish& )            = delete;
+    ValueZeroMqPublish& operator=( const ValueZeroMqPublish& ) = delete;
 
 public:
     static ValueZeroMqPublish& GetInstance()
@@ -92,14 +83,19 @@ public:
     }
 
 private:
-    ValueZeroMqPublish(){};
-
     std::unordered_map< std::string, std::shared_ptr< ZeroMqImpl > > zeromq_pack;
 }; // ValueZeroMqPublish
 
 class ValueZeroMqSubscribe
 {
 public:
+    static ValueZeroMqSubscribe& GetInstance()
+    {
+        static ValueZeroMqSubscribe tmp;
+        return tmp;
+    }
+
+private:
     ValueZeroMqSubscribe() :
         stop_flag( false )
     {
@@ -116,14 +112,6 @@ public:
         }
         spdlog::info( "ValueZeroMqSubscribe is Destory" );
     };
-
-    static ValueZeroMqSubscribe& GetInstance()
-    {
-        static ValueZeroMqSubscribe tmp;
-        return tmp;
-    }
-
-private:
     ValueZeroMqSubscribe( const ValueZeroMqSubscribe& )            = delete;
     ValueZeroMqSubscribe& operator=( const ValueZeroMqSubscribe& ) = delete;
 
@@ -139,7 +127,8 @@ public:
 
         std::shared_ptr< google::protobuf::Message > tmp_proto = std::make_shared< MsgType >();
 
-        subscribe_pack.emplace( std::make_pair( MsgType().GetTypeName(), std::make_tuple( std::move( tmp_zeromq_impl ), std::move( tmp_proto ), std::move( callback ) ) ) );
+        subscribe_pack.emplace( std::make_pair( MsgType().GetTypeName(),
+                                                std::make_tuple( std::move( tmp_zeromq_impl ), std::move( tmp_proto ), std::move( callback ) ) ) );
     }
 
 private:
@@ -166,7 +155,7 @@ private:
                     {
                         if ( proto_tmp->ParseFromString( str_data.to_string() ) )
                         {
-                            callback( ( void* ) proto_tmp.get() );
+                            callback( dynamic_cast< void* >( proto_tmp.get() ) );
                         }
                         else
                         {
@@ -187,5 +176,63 @@ private:
     std::unordered_map< std::string, std::tuple< std::shared_ptr< ZeroMqImpl >, std::shared_ptr< google::protobuf::Message >, std::function< void( void* ) > > > subscribe_pack;
 
 }; // ValueZeroMqSubscribe
+
+class ValueZeroMqServce
+{
+public:
+    static ValueZeroMqServce& GetInstance()
+    {
+        static ValueZeroMqServce tmp;
+        return tmp;
+    }
+
+private:
+    ValueZeroMqServce() :
+        stop_flag( false )
+    {
+        servce_thread = std::make_shared< std::thread >( &ValueZeroMqServce::ZeroMqServceThread, this );
+        spdlog::info( "ValueZeroMqServce is Created" );
+    };
+    ~ValueZeroMqServce()
+    {
+        stop_flag = true;
+        if ( servce_thread->joinable() )
+        {
+            servce_thread->join();
+        }
+    };
+
+    ValueZeroMqServce( const ValueZeroMqServce& )            = delete;
+    ValueZeroMqServce& operator=( const ValueZeroMqServce& ) = delete;
+
+public:
+    template < typename MsgType >
+    void RegisterZMQNode( const std::string& ip, std::function< void( void* ) >&& callback )
+    {
+        std::shared_ptr< ZeroMqImpl > tmp_node = std::make_shared< ZeroMqImpl >( ZMQ_REP );
+        tmp_node->socket.set( zmq::sockopt::rcvtimeo, 0 );
+        tmp_node->socket.set( zmq::sockopt::conflate, 1 );
+        tmp_node->socket.bind( ip );
+
+        std::shared_ptr< google::protobuf::Message > tmp_proto = std::make_shared< MsgType >();
+
+        servce_pack.emplace( std::make_pair( MsgType().GetTypeName(), std::make_tuple( std::move( tmp_node ), std::move( tmp_proto ), std::move( callback ) ) ) );
+    }
+
+private:
+    void ZeroMqServceThread()
+    {
+        while ( !stop_flag )
+        {
+            std::this_thread::sleep_for( std::chrono::milliseconds( 5 ) );
+        }
+    }
+
+private:
+    bool                           stop_flag;
+    std::shared_ptr< std::thread > servce_thread;
+
+    std::unordered_map< std::string, std::tuple< std::shared_ptr< ZeroMqImpl >, std::shared_ptr< google::protobuf::Message >, std::function< void( void*, const zmq::socket_t& ) > > > servce_pack;
+}; // ValueZeroMqServce
 
 } // namespace ZeroMqFactory
