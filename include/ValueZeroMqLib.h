@@ -21,6 +21,13 @@
 
 namespace ZeroMqFactory {
 
+enum
+{
+    zeromq_index = ( 0 ),
+    proto_index,
+    callback_index,
+};
+
 class ZeroMqImpl
 {
 public:
@@ -35,7 +42,12 @@ public:
         context.close();
     }
 
-public:
+    zmq::socket_t& GetSocketRef()
+    {
+        return socket;
+    }
+
+private:
     zmq::context_t context;
     zmq::socket_t  socket;
 }; // ZeroMqImpl
@@ -43,8 +55,14 @@ public:
 class ValueZeroMqPublish
 {
 private:
-    ValueZeroMqPublish(){};
-    ~ValueZeroMqPublish(){};
+    ValueZeroMqPublish()
+    {
+        spdlog::info( "ValueZeroMqPublish is Created" );
+    };
+    ~ValueZeroMqPublish()
+    {
+        spdlog::info( "ValueZeroMqPublish is Destory" );
+    };
 
     ValueZeroMqPublish( const ValueZeroMqPublish& )            = delete;
     ValueZeroMqPublish& operator=( const ValueZeroMqPublish& ) = delete;
@@ -110,7 +128,7 @@ private:
         {
             subscribe_thread->join();
         }
-        spdlog::info( "ValueZeroMqSubscribe is Destory" );
+        spdlog::info( "ValueZeroMqSubscribe is Destory {}", typeid( *this ).name() );
     };
     ValueZeroMqSubscribe( const ValueZeroMqSubscribe& )            = delete;
     ValueZeroMqSubscribe& operator=( const ValueZeroMqSubscribe& ) = delete;
@@ -134,12 +152,6 @@ public:
 private:
     void ZeroMqSubscribeThread()
     {
-        enum
-        {
-            zeromq_index = ( 0 ),
-            proto_index,
-            callback_index,
-        };
         while ( !stop_flag )
         {
             if ( subscribe_pack.size() != 0 )
@@ -151,7 +163,7 @@ private:
                     auto proto_tmp  = std::get< proto_index >( tmp.second );
                     auto callback   = std::get< callback_index >( tmp.second );
 
-                    if ( zeromq_tmp->socket.recv( str_data ) )
+                    if ( zeromq_tmp->GetSocketRef().recv( str_data ) )
                     {
                         if ( proto_tmp->ParseFromString( str_data.to_string() ) )
                         {
@@ -173,7 +185,9 @@ private:
     bool                           stop_flag;
     std::shared_ptr< std::thread > subscribe_thread;
 
-    std::unordered_map< std::string, std::tuple< std::shared_ptr< ZeroMqImpl >, std::shared_ptr< google::protobuf::Message >, std::function< void( void* ) > > > subscribe_pack;
+    std::unordered_map< std::string,
+                        std::tuple< std::shared_ptr< ZeroMqImpl >, std::shared_ptr< google::protobuf::Message >, std::function< void( void* ) > > >
+        subscribe_pack;
 
 }; // ValueZeroMqSubscribe
 
@@ -200,6 +214,7 @@ private:
         {
             servce_thread->join();
         }
+        spdlog::info( "ValueZeroMqServce is Destory , {}", typeid( *this ).name() );
     };
 
     ValueZeroMqServce( const ValueZeroMqServce& )            = delete;
@@ -207,7 +222,7 @@ private:
 
 public:
     template < typename MsgType >
-    void RegisterZMQNode( const std::string& ip, std::function< void( void* ) >&& callback )
+    void RegisterZMQNode( const std::string& ip, std::function< void( void*, const zmq::socket_t& ) >&& callback )
     {
         std::shared_ptr< ZeroMqImpl > tmp_node = std::make_shared< ZeroMqImpl >( ZMQ_REP );
         tmp_node->socket.set( zmq::sockopt::rcvtimeo, 0 );
@@ -224,15 +239,81 @@ private:
     {
         while ( !stop_flag )
         {
+            if ( servce_pack.size() != 0 )
+            {
+                zmq::message_t str_data;
+                for ( const auto& tmp : servce_pack )
+                {
+                    auto zeromq_tmp = std::get< zeromq_index >( tmp.second );
+                    auto proto_tmp  = std::get< proto_index >( tmp.second );
+                    auto callback   = std::get< callback_index >( tmp.second );
+
+                    if ( zeromq_tmp->GetSocketRef().recv( str_data ) )
+                    {
+                        if ( proto_tmp->ParseFromString( str_data.to_string() ) )
+                        {
+                            callback( dynamic_cast< void* >( proto_tmp.get() ), zeromq_tmp->GetSocketRef() );
+                        }
+                        else
+                        {
+                            spdlog::error( "{} parse failure!!!!", proto_tmp->GetTypeName() );
+                            std::string temp = "failure";
+                            zeromq_tmp->GetSocketRef().send( zmq::const_buffer( temp.data(), temp.size() ) );
+                        }
+                    }
+                }
+            }
+
             std::this_thread::sleep_for( std::chrono::milliseconds( 5 ) );
         }
+        spdlog::info( "ZeroMqServceThread is stop !!!" );
     }
 
 private:
     bool                           stop_flag;
     std::shared_ptr< std::thread > servce_thread;
 
-    std::unordered_map< std::string, std::tuple< std::shared_ptr< ZeroMqImpl >, std::shared_ptr< google::protobuf::Message >, std::function< void( void*, const zmq::socket_t& ) > > > servce_pack;
+    std::unordered_map< std::string,
+                        std::tuple< std::shared_ptr< ZeroMqImpl >, std::shared_ptr< google::protobuf::Message >, std::function< void( void*, const zmq::socket_t& ) > > >
+        servce_pack;
 }; // ValueZeroMqServce
+
+class ValueZeroMqClient
+{
+public:
+    static ValueZeroMqClient& GetInstance()
+    {
+        static ValueZeroMqClient tmp;
+        return tmp;
+    }
+
+private:
+    ValueZeroMqClient(){};
+    ~ValueZeroMqClient(){};
+
+    ValueZeroMqClient( const ValueZeroMqClient& )            = delete;
+    ValueZeroMqClient& operator=( const ValueZeroMqClient& ) = delete;
+
+public:
+    template < typename MsgType >
+    void RegisterZMQNode( const std::string& ip )
+    {
+        auto tmp = std::make_shared< ZeroMqImpl >( ZMQ_REQ );
+
+        int timeout = 1000;
+        tmp->socket.set_option( ZMQ_RCVTIMEO, &timeout, sizeof( timeout ) ); // 在一个recv操作返回EAGAIN错误前的最大时间
+        tmp->socket.set_option( ZMQ_SNDTIMEO, &timeout, sizeof( timeout ) ); // 在一个发送操作返回EAGAIN之前等待的最大时间
+
+        int linger = 0;
+        tmp->socket.set_option( ZMQ_LINGER, &linger, sizeof( linger ) ); // socket关闭时等待send内容的等待时间
+
+        tmp->socket.bind( ip );
+
+        client_pack.emplace( std::make_pair( MsgType().GetTypeName(), std::move( tmp ) ) );
+    }
+
+private:
+    std::unordered_map< std::string, std::shared_ptr< ZeroMqImpl > > client_pack;
+};
 
 } // namespace ZeroMqFactory
